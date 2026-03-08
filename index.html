@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>8 de Marzo — Día Internacional de la Mujer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel+Decorative:wght@400;700&family=Lato:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root{--rose:#c41e3a;--rose-light:#e8546a;--rose-dark:#8b0a1a;--gold:#d4a843;--gold-light:#f0c060;--cream:#fdf6ee;--deep:#1a0510;}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{background:var(--deep);color:var(--cream);font-family:'Lato',sans-serif;font-weight:300;overflow-x:hidden;}
+#petals-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;}
+.cursor-glow{position:fixed;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(196,30,58,.13) 0%,transparent 70%);pointer-events:none;transform:translate(-50%,-50%);z-index:0;}
+section{position:relative;z-index:2;}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem 1.5rem;
+background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(139,10,26,.55) 0%,transparent 70%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(196,30,58,.3) 0%,transparent 60%),radial-gradient(ellipse 40% 50% at 10% 60%,rgba(212,168,67,.15) 0%,transparent 60%),linear-gradient(175deg,#1a0510 0%,#0d0108 60%,#1a0510 100%);overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c41e3a' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");opacity:.5;pointer-events:none;}
+.hero-badge{display:inline-flex;align-items:center;gap:.5rem;background:linear-gradient(135deg,rgba(212,168,67,.2),rgba(212,168,67,.05));border:1px solid rgba(212,168,67,.4);border-radius:100px;padding:.4rem 1.2rem;font-size:.72rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold-light);margin-bottom:2rem;animation:fadeDown 1s ease both;}
+.date-tag{font-family:'Cinzel Decorative',serif;font-size:clamp(3.5rem,15vw,8rem);font-weight:700;background:linear-gradient(135deg,var(--gold-light) 0%,var(--gold) 40%,#a07830 70%,var(--gold-light) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;animation:fadeUp 1s .2s ease both;filter:drop-shadow(0 0 30px rgba(212,168,67,.4));}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(1.6rem,6vw,3.2rem);font-weight:300;font-style:italic;color:var(--cream);line-height:1.3;margin:.5rem 0 1.5rem;animation:fadeUp 1s .4s ease both;max-width:700px;}
+.hero-title span{color:var(--rose-light);font-style:normal;font-weight:600;}
+.hero-divider{width:80px;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);margin:1.5rem auto;animation:expand 1.2s .6s ease both;}
+.hero-subtitle{font-size:clamp(.9rem,2.5vw,1.1rem);color:rgba(253,246,238,.65);max-width:520px;line-height:1.8;animation:fadeUp 1s .7s ease both;letter-spacing:.03em;}
+
+/* ROSES */
+.hero-roses{display:flex;gap:1rem;justify-content:center;align-items:flex-end;margin-top:2.5rem;animation:fadeUp 1s .9s ease both;}
+.rose-wrap{display:inline-flex;align-items:flex-end;justify-content:center;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 8px 20px rgba(139,10,26,.65));transition:filter .3s;}
+.rose-wrap:hover{filter:drop-shadow(0 16px 36px rgba(196,30,58,.9));}
+.rose-wrap:nth-child(1){animation-delay:0s;}
+.rose-wrap:nth-child(2){animation-delay:.25s;}
+.rose-wrap:nth-child(3){animation-delay:.5s;}
+.rose-wrap:nth-child(4){animation-delay:.75s;}
+.rose-wrap:nth-child(5){animation-delay:1s;}
+
+.scroll-hint{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.4rem;opacity:.45;animation:fadeUp 1s 1.2s ease both;}
+.scroll-hint span{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;}
+.scroll-arrow{width:20px;height:20px;border-right:1px solid var(--cream);border-bottom:1px solid var(--cream);transform:rotate(45deg);animation:bounce 1.5s ease-in-out infinite;}
+
+/* POEM */
+.poem-section{padding:6rem 1.5rem;background:radial-gradient(ellipse 100% 60% at 50% 50%,rgba(196,30,58,.08) 0%,transparent 70%),linear-gradient(180deg,#0d0108 0%,#120310 50%,#0d0108 100%);text-align:center;position:relative;}
+.poem-section::before,.poem-section::after{content:'✦';position:absolute;color:var(--gold);opacity:.18;font-size:5rem;}
+.poem-section::before{top:2rem;left:1rem;}.poem-section::after{bottom:2rem;right:1rem;transform:rotate(45deg);}
+.section-label{font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;opacity:0;transition:opacity .8s,transform .8s;transform:translateY(20px);}
+.section-label.visible{opacity:1;transform:translateY(0);}
+.poem-title{font-family:'Cinzel Decorative',serif;font-size:clamp(1.2rem,4vw,2rem);color:var(--gold-light);margin-bottom:3rem;opacity:0;transition:opacity .8s .1s,transform .8s .1s;transform:translateY(20px);}
+.poem-title.visible{opacity:1;transform:translateY(0);}
+.poem-body{max-width:600px;margin:0 auto;font-family:'Cormorant Garamond',serif;font-size:clamp(1.05rem,3vw,1.35rem);line-height:2.1;font-style:italic;color:rgba(253,246,238,.88);}
+.poem-stanza{margin-bottom:2rem;opacity:0;transform:translateY(30px);transition:opacity .9s,transform .9s;}
+.poem-stanza.visible{opacity:1;transform:translateY(0);}
+.poem-highlight{color:var(--rose-light);font-style:normal;font-weight:600;}
+.rose-divider{display:flex;justify-content:center;gap:.7rem;align-items:flex-end;margin:1rem 0 1.8rem;opacity:0;transform:translateY(20px);transition:opacity .8s .15s,transform .8s .15s;}
+.rose-divider.visible{opacity:1;transform:translateY(0);}
+.rose-divider .rose-wrap{animation:float 2.8s ease-in-out infinite;filter:drop-shadow(0 5px 14px rgba(139,10,26,.55));}
+.rose-divider .rose-wrap:nth-child(2){animation-delay:.2s;}.rose-divider .rose-wrap:nth-child(3){animation-delay:.4s;}
+
+/* GRATITUD */
+.gratitud-section{padding:6rem 1.5rem;background:linear-gradient(135deg,#1a0510 0%,#2a0818 50%,#1a0510 100%);position:relative;overflow:hidden;}
+.gratitud-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 50% 80% at 0% 50%,rgba(139,10,26,.25) 0%,transparent 60%),radial-gradient(ellipse 40% 60% at 100% 50%,rgba(212,168,67,.1) 0%,transparent 60%);pointer-events:none;}
+.gratitud-inner{max-width:900px;margin:0 auto;text-align:center;}
+.gratitud-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,6vw,3.5rem);font-weight:600;color:var(--cream);margin-bottom:1rem;line-height:1.2;opacity:0;transform:translateY(20px);transition:all .9s;}
+.gratitud-title.visible{opacity:1;transform:translateY(0);}
+.gratitud-title em{color:var(--rose-light);font-style:normal;}
+.gratitud-text{font-size:clamp(.95rem,2.5vw,1.1rem);color:rgba(253,246,238,.72);max-width:640px;margin:1.5rem auto 3rem;line-height:1.9;opacity:0;transform:translateY(20px);transition:all .9s .15s;}
+.gratitud-text.visible{opacity:1;transform:translateY(0);}
+.virtudes-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.2rem;max-width:900px;margin:0 auto;}
+.virtud-card{background:linear-gradient(135deg,rgba(196,30,58,.12),rgba(139,10,26,.06));border:1px solid rgba(196,30,58,.25);border-radius:16px;padding:1.8rem 1.4rem;text-align:center;opacity:0;transform:translateY(30px) scale(.95);transition:all .7s;position:relative;overflow:hidden;cursor:default;}
+.virtud-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(196,30,58,.18),transparent);opacity:0;transition:opacity .4s;border-radius:16px;}
+.virtud-card:hover::before{opacity:1;}
+.virtud-card:hover{transform:translateY(-6px) scale(1.03)!important;border-color:rgba(196,30,58,.6);box-shadow:0 20px 60px rgba(196,30,58,.2);}
+.virtud-card.visible{opacity:1;transform:translateY(0) scale(1);}
+.virtud-icon{font-size:2.2rem;display:block;margin-bottom:.8rem;}
+.virtud-name{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;color:var(--rose-light);margin-bottom:.4rem;}
+.virtud-desc{font-size:.82rem;color:rgba(253,246,238,.55);line-height:1.6;}
+
+/* FINAL */
+.final-section{padding:7rem 1.5rem;text-align:center;background:radial-gradient(ellipse 80% 60% at 50% 100%,rgba(139,10,26,.5) 0%,transparent 70%),linear-gradient(180deg,#0d0108 0%,#1a0510 100%);position:relative;overflow:hidden;}
+.final-section::before{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(600px,90vw);height:min(600px,90vw);border-radius:50%;border:1px solid rgba(196,30,58,.12);pointer-events:none;}
+.final-quote{font-family:'Cormorant Garamond',serif;font-size:clamp(1.4rem,5vw,2.8rem);font-style:italic;font-weight:300;color:var(--cream);max-width:700px;margin:0 auto 2rem;line-height:1.5;opacity:0;transform:translateY(30px);transition:all 1s;position:relative;z-index:2;}
+.final-quote.visible{opacity:1;transform:translateY(0);}
+.final-roses-row{display:flex;justify-content:center;gap:1.2rem;align-items:flex-end;margin:2rem 0;opacity:0;transition:all 1s .2s;position:relative;z-index:2;}
+.final-roses-row.visible{opacity:1;}
+.final-roses-row .rose-wrap{animation:heartbeat 1.8s ease-in-out infinite;filter:drop-shadow(0 8px 24px rgba(139,10,26,.65));}
+.final-roses-row .rose-wrap:nth-child(2){animation-delay:.2s;}
+.final-roses-row .rose-wrap:nth-child(3){animation-delay:.4s;}
+.final-firma{font-family:'Cinzel Decorative',serif;font-size:clamp(.8rem,2.5vw,1.1rem);color:var(--gold);letter-spacing:.2em;margin-top:2rem;opacity:0;transition:all 1s .3s;position:relative;z-index:2;}
+.final-firma.visible{opacity:1;}
+.fireworks-btn{display:inline-flex;align-items:center;gap:.6rem;margin-top:2.5rem;background:linear-gradient(135deg,var(--rose),var(--rose-dark));color:var(--cream);border:none;border-radius:100px;padding:.9rem 2.2rem;font-family:'Lato',sans-serif;font-size:.9rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;position:relative;z-index:2;box-shadow:0 8px 32px rgba(196,30,58,.4);transition:all .3s;opacity:0;transform:translateY(20px);}
+.fireworks-btn.visible{opacity:1;transform:translateY(0);}
+.fireworks-btn:hover{transform:translateY(-3px);box-shadow:0 16px 48px rgba(196,30,58,.55);}
+.fireworks-btn:active{transform:scale(.97);}
+footer{padding:2rem;text-align:center;background:#050103;font-size:.72rem;color:rgba(253,246,238,.25);letter-spacing:.15em;position:relative;z-index:2;}
+
+/* KEYFRAMES */
+@keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes expand{from{opacity:0;width:0}to{opacity:1;width:80px}}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-14px) rotate(2deg)}}
+@keyframes bounce{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(6px)}}
+@keyframes heartbeat{0%,100%{transform:scale(1)}30%{transform:scale(1.12)}60%{transform:scale(.97)}}
+@keyframes confetti-fall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+@keyframes ripple-out{from{transform:scale(0);opacity:1}to{transform:scale(3);opacity:0}}
+
+@media(max-width:480px){.virtudes-grid{grid-template-columns:1fr 1fr;gap:.8rem;}.virtud-card{padding:1.2rem .9rem;}.hero-roses{gap:.6rem;}}
+@media(min-width:768px){.virtudes-grid{grid-template-columns:repeat(4,1fr);}}
+</style>
+</head>
+<body>
+
+<div class="cursor-glow" id="cursorGlow"></div>
+<canvas id="petals-canvas"></canvas>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-badge">✦ &nbsp; 8 de Marzo &nbsp; ✦</div>
+  <div class="date-tag">2026</div>
+  <h1 class="hero-title">Día Internacional<br>de la <span>Mujer</span></h1>
+  <div class="hero-divider"></div>
+  <p class="hero-subtitle">
+    A cada mujer que con su presencia ha iluminado mi camino,<br>
+    que ha dejado su huella inigualable en mi historia —<br>
+    hoy y siempre, <em style="color:var(--rose-light)">gracias</em>.
+  </p>
+
+  <!-- Rosas SVG dibujadas a mano, sin dependencia externa -->
+  <div class="hero-roses">
+    <!-- Rosa pequeña izq -->
+    <span class="rose-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 88" width="52" height="82">
+        <line x1="28" y1="68" x2="28" y2="88" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/>
+        <line x1="28" y1="76" x2="20" y2="68" stroke="#2d5a1b" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="20" cy="68" rx="9" ry="5" fill="#3a7a22" transform="rotate(-35 20 68)"/>
+        <ellipse cx="36" cy="73" rx="8" ry="4" fill="#2d5a1b" transform="rotate(28 36 73)"/>
+        <ellipse cx="28" cy="62" rx="11" ry="6" fill="#255c14"/>
+        <ellipse cx="28" cy="50" rx="14" ry="13" fill="#7b0818"/>
+        <ellipse cx="16" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(-20 16 48)"/>
+        <ellipse cx="40" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(20 40 48)"/>
+        <ellipse cx="28" cy="44" rx="12" ry="11" fill="#a81028"/>
+        <ellipse cx="19" cy="43" rx="9" ry="10" fill="#b81535" transform="rotate(-14 19 43)"/>
+        <ellipse cx="37" cy="43" rx="9" ry="10" fill="#b81535" transform="rotate(14 37 43)"/>
+        <ellipse cx="28" cy="38" rx="9" ry="9" fill="#c41e3a"/>
+        <ellipse cx="22" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(-10 22 38)"/>
+        <ellipse cx="34" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(10 34 38)"/>
+        <ellipse cx="28" cy="32" rx="6" ry="7" fill="#e8546a"/>
+        <ellipse cx="28" cy="30" rx="4" ry="4.5" fill="#f07080"/>
+        <ellipse cx="28" cy="28" rx="2.5" ry="2.5" fill="#f8a0b0"/>
+        <ellipse cx="25.5" cy="27" rx="1.5" ry="2" fill="rgba(255,255,255,0.38)"/>
+      </svg>
+    </span>
+    <!-- Rosa mediana izq -->
+    <span class="rose-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 100" width="62" height="96">
+        <line x1="33" y1="78" x2="33" y2="100" stroke="#2d5a1b" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="33" y1="88" x2="23" y2="78" stroke="#2d5a1b" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse cx="23" cy="78" rx="11" ry="6" fill="#3a7a22" transform="rotate(-35 23 78)"/>
+        <ellipse cx="43" cy="83" rx="10" ry="5" fill="#2d5a1b" transform="rotate(28 43 83)"/>
+        <ellipse cx="33" cy="71" rx="13" ry="7" fill="#255c14"/>
+        <ellipse cx="33" cy="56" rx="17" ry="16" fill="#7b0818"/>
+        <ellipse cx="18" cy="54" rx="12" ry="15" fill="#8b0a1a" transform="rotate(-22 18 54)"/>
+        <ellipse cx="48" cy="54" rx="12" ry="15" fill="#8b0a1a" transform="rotate(22 48 54)"/>
+        <ellipse cx="33" cy="50" rx="14" ry="13" fill="#a81028"/>
+        <ellipse cx="22" cy="49" rx="11" ry="12" fill="#b81535" transform="rotate(-14 22 49)"/>
+        <ellipse cx="44" cy="49" rx="11" ry="12" fill="#b81535" transform="rotate(14 44 49)"/>
+        <ellipse cx="33" cy="43" rx="11" ry="11" fill="#c41e3a"/>
+        <ellipse cx="25" cy="43" rx="9" ry="10" fill="#d02040" transform="rotate(-10 25 43)"/>
+        <ellipse cx="41" cy="43" rx="9" ry="10" fill="#d02040" transform="rotate(10 41 43)"/>
+        <ellipse cx="33" cy="36" rx="7.5" ry="8.5" fill="#e8546a"/>
+        <ellipse cx="33" cy="34" rx="5" ry="5.5" fill="#f07080"/>
+        <ellipse cx="33" cy="32" rx="3" ry="3" fill="#f8a0b0"/>
+        <ellipse cx="30.5" cy="31" rx="2" ry="2.5" fill="rgba(255,255,255,0.4)"/>
+      </svg>
+    </span>
+    <!-- Rosa grande centro -->
+    <span class="rose-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 78 118" width="74" height="114">
+        <line x1="39" y1="90" x2="39" y2="118" stroke="#2d5a1b" stroke-width="4" stroke-linecap="round"/>
+        <line x1="39" y1="102" x2="27" y2="91" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/>
+        <ellipse cx="27" cy="91" rx="14" ry="7" fill="#3a7a22" transform="rotate(-35 27 91)"/>
+        <ellipse cx="51" cy="97" rx="12" ry="6" fill="#2d5a1b" transform="rotate(28 51 97)"/>
+        <ellipse cx="39" cy="83" rx="16" ry="8" fill="#255c14"/>
+        <ellipse cx="39" cy="65" rx="20" ry="19" fill="#6b0614"/>
+        <ellipse cx="21" cy="63" rx="14" ry="18" fill="#7b0818" transform="rotate(-22 21 63)"/>
+        <ellipse cx="57" cy="63" rx="14" ry="18" fill="#7b0818" transform="rotate(22 57 63)"/>
+        <ellipse cx="39" cy="58" rx="17" ry="16" fill="#9b1025"/>
+        <ellipse cx="26" cy="57" rx="13" ry="15" fill="#aa1530" transform="rotate(-14 26 57)"/>
+        <ellipse cx="52" cy="57" rx="13" ry="15" fill="#aa1530" transform="rotate(14 52 57)"/>
+        <ellipse cx="39" cy="50" rx="13" ry="13" fill="#c41e3a"/>
+        <ellipse cx="29" cy="50" rx="11" ry="12" fill="#d02040" transform="rotate(-10 29 50)"/>
+        <ellipse cx="49" cy="50" rx="11" ry="12" fill="#d02040" transform="rotate(10 49 50)"/>
+        <ellipse cx="39" cy="42" rx="9" ry="10" fill="#e8546a"/>
+        <ellipse cx="39" cy="39" rx="6" ry="6.5" fill="#f07080"/>
+        <ellipse cx="39" cy="37" rx="3.5" ry="3.5" fill="#f8a0b0"/>
+        <ellipse cx="36" cy="36" rx="2.2" ry="3" fill="rgba(255,255,255,0.42)"/>
+      </svg>
+    </span>
+    <!-- Rosa mediana der -->
+    <span class="rose-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 100" width="62" height="96">
+        <line x1="33" y1="78" x2="33" y2="100" stroke="#2d5a1b" stroke-width="3.5" stroke-linecap="round"/>
+        <line x1="33" y1="88" x2="23" y2="78" stroke="#2d5a1b" stroke-width="2.5" stroke-linecap="round"/>
+        <ellipse cx="23" cy="78" rx="11" ry="6" fill="#3a7a22" transform="rotate(-35 23 78)"/>
+        <ellipse cx="43" cy="83" rx="10" ry="5" fill="#2d5a1b" transform="rotate(28 43 83)"/>
+        <ellipse cx="33" cy="71" rx="13" ry="7" fill="#255c14"/>
+        <ellipse cx="33" cy="56" rx="17" ry="16" fill="#7b0818"/>
+        <ellipse cx="18" cy="54" rx="12" ry="15" fill="#8b0a1a" transform="rotate(-22 18 54)"/>
+        <ellipse cx="48" cy="54" rx="12" ry="15" fill="#8b0a1a" transform="rotate(22 48 54)"/>
+        <ellipse cx="33" cy="50" rx="14" ry="13" fill="#a81028"/>
+        <ellipse cx="22" cy="49" rx="11" ry="12" fill="#b81535" transform="rotate(-14 22 49)"/>
+        <ellipse cx="44" cy="49" rx="11" ry="12" fill="#b81535" transform="rotate(14 44 49)"/>
+        <ellipse cx="33" cy="43" rx="11" ry="11" fill="#c41e3a"/>
+        <ellipse cx="25" cy="43" rx="9" ry="10" fill="#d02040" transform="rotate(-10 25 43)"/>
+        <ellipse cx="41" cy="43" rx="9" ry="10" fill="#d02040" transform="rotate(10 41 43)"/>
+        <ellipse cx="33" cy="36" rx="7.5" ry="8.5" fill="#e8546a"/>
+        <ellipse cx="33" cy="34" rx="5" ry="5.5" fill="#f07080"/>
+        <ellipse cx="33" cy="32" rx="3" ry="3" fill="#f8a0b0"/>
+        <ellipse cx="30.5" cy="31" rx="2" ry="2.5" fill="rgba(255,255,255,0.4)"/>
+      </svg>
+    </span>
+    <!-- Rosa pequeña der -->
+    <span class="rose-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 88" width="52" height="82">
+        <line x1="28" y1="68" x2="28" y2="88" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/>
+        <line x1="28" y1="76" x2="20" y2="68" stroke="#2d5a1b" stroke-width="2" stroke-linecap="round"/>
+        <ellipse cx="20" cy="68" rx="9" ry="5" fill="#3a7a22" transform="rotate(-35 20 68)"/>
+        <ellipse cx="36" cy="73" rx="8" ry="4" fill="#2d5a1b" transform="rotate(28 36 73)"/>
+        <ellipse cx="28" cy="62" rx="11" ry="6" fill="#255c14"/>
+        <ellipse cx="28" cy="50" rx="14" ry="13" fill="#7b0818"/>
+        <ellipse cx="16" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(-20 16 48)"/>
+        <ellipse cx="40" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(20 40 48)"/>
+        <ellipse cx="28" cy="44" rx="12" ry="11" fill="#a81028"/>
+        <ellipse cx="19" cy="43" rx="9" ry="10" fill="#b81535" transform="rotate(-14 19 43)"/>
+        <ellipse cx="37" cy="43" rx="9" ry="10" fill="#b81535" transform="rotate(14 37 43)"/>
+        <ellipse cx="28" cy="38" rx="9" ry="9" fill="#c41e3a"/>
+        <ellipse cx="22" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(-10 22 38)"/>
+        <ellipse cx="34" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(10 34 38)"/>
+        <ellipse cx="28" cy="32" rx="6" ry="7" fill="#e8546a"/>
+        <ellipse cx="28" cy="30" rx="4" ry="4.5" fill="#f07080"/>
+        <ellipse cx="28" cy="28" rx="2.5" ry="2.5" fill="#f8a0b0"/>
+        <ellipse cx="25.5" cy="27" rx="1.5" ry="2" fill="rgba(255,255,255,0.38)"/>
+      </svg>
+    </span>
+  </div>
+
+  <div class="scroll-hint"><span>Descubre</span><div class="scroll-arrow"></div></div>
+</section>
+
+<!-- ═══ POEM ═══ -->
+<section class="poem-section">
+  <p class="section-label">— Un poema para ti —</p>
+  <h2 class="poem-title">Eres el Universo Entero</h2>
+  <div class="poem-body">
+
+    <div class="poem-stanza">
+      Eres la primera luz que parte la penumbra,<br>
+      la mano que levanta cuando el mundo derrumba,<br>
+      el susurro que calma la tormenta más brava,<br>
+      <span class="poem-highlight">la llama que no cede, que nunca se apagaba.</span>
+    </div>
+
+    <div class="rose-divider">
+      <span class="rose-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 88" width="38" height="58"><line x1="28" y1="68" x2="28" y2="88" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/><ellipse cx="20" cy="68" rx="9" ry="5" fill="#3a7a22" transform="rotate(-35 20 68)"/><ellipse cx="28" cy="62" rx="11" ry="6" fill="#255c14"/><ellipse cx="28" cy="50" rx="14" ry="13" fill="#7b0818"/><ellipse cx="16" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(-20 16 48)"/><ellipse cx="40" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(20 40 48)"/><ellipse cx="28" cy="44" rx="12" ry="11" fill="#a81028"/><ellipse cx="28" cy="38" rx="9" ry="9" fill="#c41e3a"/><ellipse cx="22" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(-10 22 38)"/><ellipse cx="34" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(10 34 38)"/><ellipse cx="28" cy="32" rx="6" ry="7" fill="#e8546a"/><ellipse cx="28" cy="29" rx="3.5" ry="4" fill="#f07080"/><ellipse cx="26" cy="27.5" rx="1.5" ry="2" fill="rgba(255,255,255,0.38)"/></svg></span>
+      <span class="rose-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 100" width="46" height="70"><line x1="33" y1="78" x2="33" y2="100" stroke="#2d5a1b" stroke-width="3.5" stroke-linecap="round"/><ellipse cx="23" cy="78" rx="11" ry="6" fill="#3a7a22" transform="rotate(-35 23 78)"/><ellipse cx="33" cy="71" rx="13" ry="7" fill="#255c14"/><ellipse cx="33" cy="56" rx="17" ry="16" fill="#7b0818"/><ellipse cx="18" cy="54" rx="12" ry="15" fill="#8b0a1a" transform="rotate(-22 18 54)"/><ellipse cx="48" cy="54" rx="12" ry="15" fill="#8b0a1a" transform="rotate(22 48 54)"/><ellipse cx="33" cy="50" rx="14" ry="13" fill="#a81028"/><ellipse cx="33" cy="43" rx="11" ry="11" fill="#c41e3a"/><ellipse cx="25" cy="43" rx="9" ry="10" fill="#d02040" transform="rotate(-10 25 43)"/><ellipse cx="41" cy="43" rx="9" ry="10" fill="#d02040" transform="rotate(10 41 43)"/><ellipse cx="33" cy="36" rx="7.5" ry="8.5" fill="#e8546a"/><ellipse cx="33" cy="33" rx="4.5" ry="5" fill="#f07080"/><ellipse cx="30.5" cy="31" rx="2" ry="2.5" fill="rgba(255,255,255,0.4)"/></svg></span>
+      <span class="rose-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 88" width="38" height="58"><line x1="28" y1="68" x2="28" y2="88" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/><ellipse cx="36" cy="73" rx="8" ry="4" fill="#2d5a1b" transform="rotate(28 36 73)"/><ellipse cx="28" cy="62" rx="11" ry="6" fill="#255c14"/><ellipse cx="28" cy="50" rx="14" ry="13" fill="#7b0818"/><ellipse cx="16" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(-20 16 48)"/><ellipse cx="40" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(20 40 48)"/><ellipse cx="28" cy="44" rx="12" ry="11" fill="#a81028"/><ellipse cx="28" cy="38" rx="9" ry="9" fill="#c41e3a"/><ellipse cx="22" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(-10 22 38)"/><ellipse cx="34" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(10 34 38)"/><ellipse cx="28" cy="32" rx="6" ry="7" fill="#e8546a"/><ellipse cx="28" cy="29" rx="3.5" ry="4" fill="#f07080"/><ellipse cx="26" cy="27.5" rx="1.5" ry="2" fill="rgba(255,255,255,0.38)"/></svg></span>
+    </div>
+
+    <div class="poem-stanza">
+      En tus ojos vive el mar con toda su profundidad,<br>
+      en tu risa, la promesa de la pura libertad,<br>
+      en tus manos, el milagro de crear desde la nada,<br>
+      <span class="poem-highlight">en tu voz, la melodía que el alma necesitaba.</span>
+    </div>
+
+    <div class="rose-divider">
+      <span class="rose-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 88" width="38" height="58"><line x1="28" y1="68" x2="28" y2="88" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/><ellipse cx="20" cy="68" rx="9" ry="5" fill="#3a7a22" transform="rotate(-35 20 68)"/><ellipse cx="28" cy="62" rx="11" ry="6" fill="#255c14"/><ellipse cx="28" cy="50" rx="14" ry="13" fill="#7b0818"/><ellipse cx="16" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(-20 16 48)"/><ellipse cx="40" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(20 40 48)"/><ellipse cx="28" cy="44" rx="12" ry="11" fill="#a81028"/><ellipse cx="28" cy="38" rx="9" ry="9" fill="#c41e3a"/><ellipse cx="22" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(-10 22 38)"/><ellipse cx="34" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(10 34 38)"/><ellipse cx="28" cy="32" rx="6" ry="7" fill="#e8546a"/><ellipse cx="28" cy="29" rx="3.5" ry="4" fill="#f07080"/><ellipse cx="26" cy="27.5" rx="1.5" ry="2" fill="rgba(255,255,255,0.38)"/></svg></span>
+      <span class="rose-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 100" width="46" height="70"><line x1="33" y1="78" x2="33" y2="100" stroke="#2d5a1b" stroke-width="3.5" stroke-linecap="round"/><ellipse cx="23" cy="78" rx="11" ry="6" fill="#3a7a22" transform="rotate(-35 23 78)"/><ellipse cx="33" cy="71" rx="13" ry="7" fill="#255c14"/><ellipse cx="33" cy="56" rx="17" ry="16" fill="#7b0818"/><ellipse cx="18" cy="54" rx="12" ry="15" fill="#8b0a1a" transform="rotate(-22 18 54)"/><ellipse cx="48" cy="54" rx="12" ry="15" fill="#8b0a1a" transform="rotate(22 48 54)"/><ellipse cx="33" cy="50" rx="14" ry="13" fill="#a81028"/><ellipse cx="33" cy="43" rx="11" ry="11" fill="#c41e3a"/><ellipse cx="25" cy="43" rx="9" ry="10" fill="#d02040" transform="rotate(-10 25 43)"/><ellipse cx="41" cy="43" rx="9" ry="10" fill="#d02040" transform="rotate(10 41 43)"/><ellipse cx="33" cy="36" rx="7.5" ry="8.5" fill="#e8546a"/><ellipse cx="33" cy="33" rx="4.5" ry="5" fill="#f07080"/><ellipse cx="30.5" cy="31" rx="2" ry="2.5" fill="rgba(255,255,255,0.4)"/></svg></span>
+      <span class="rose-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 88" width="38" height="58"><line x1="28" y1="68" x2="28" y2="88" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/><ellipse cx="36" cy="73" rx="8" ry="4" fill="#2d5a1b" transform="rotate(28 36 73)"/><ellipse cx="28" cy="62" rx="11" ry="6" fill="#255c14"/><ellipse cx="28" cy="50" rx="14" ry="13" fill="#7b0818"/><ellipse cx="16" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(-20 16 48)"/><ellipse cx="40" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(20 40 48)"/><ellipse cx="28" cy="44" rx="12" ry="11" fill="#a81028"/><ellipse cx="28" cy="38" rx="9" ry="9" fill="#c41e3a"/><ellipse cx="22" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(-10 22 38)"/><ellipse cx="34" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(10 34 38)"/><ellipse cx="28" cy="32" rx="6" ry="7" fill="#e8546a"/><ellipse cx="28" cy="29" rx="3.5" ry="4" fill="#f07080"/><ellipse cx="26" cy="27.5" rx="1.5" ry="2" fill="rgba(255,255,255,0.38)"/></svg></span>
+    </div>
+
+    <div class="poem-stanza">
+      Gracias por la fuerza que regalas sin medida,<br>
+      por el amor infinito que es el motor de la vida,<br>
+      por ser puente entre lo humano y lo sagrado,<br>
+      <span class="poem-highlight">por existir exactamente como has existido.</span>
+    </div>
+
+    <div class="rose-divider">
+      <span class="rose-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 88" width="38" height="58"><line x1="28" y1="68" x2="28" y2="88" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/><ellipse cx="20" cy="68" rx="9" ry="5" fill="#3a7a22" transform="rotate(-35 20 68)"/><ellipse cx="28" cy="62" rx="11" ry="6" fill="#255c14"/><ellipse cx="28" cy="50" rx="14" ry="13" fill="#7b0818"/><ellipse cx="16" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(-20 16 48)"/><ellipse cx="40" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(20 40 48)"/><ellipse cx="28" cy="44" rx="12" ry="11" fill="#a81028"/><ellipse cx="28" cy="38" rx="9" ry="9" fill="#c41e3a"/><ellipse cx="22" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(-10 22 38)"/><ellipse cx="34" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(10 34 38)"/><ellipse cx="28" cy="32" rx="6" ry="7" fill="#e8546a"/><ellipse cx="28" cy="29" rx="3.5" ry="4" fill="#f07080"/><ellipse cx="26" cy="27.5" rx="1.5" ry="2" fill="rgba(255,255,255,0.38)"/></svg></span>
+      <span class="rose-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 100" width="46" height="70"><line x1="33" y1="78" x2="33" y2="100" stroke="#2d5a1b" stroke-width="3.5" stroke-linecap="round"/><ellipse cx="23" cy="78" rx="11" ry="6" fill="#3a7a22" transform="rotate(-35 23 78)"/><ellipse cx="33" cy="71" rx="13" ry="7" fill="#255c14"/><ellipse cx="33" cy="56" rx="17" ry="16" fill="#7b0818"/><ellipse cx="18" cy="54" rx="12" ry="15" fill="#8b0a1a" transform="rotate(-22 18 54)"/><ellipse cx="48" cy="54" rx="12" ry="15" fill="#8b0a1a" transform="rotate(22 48 54)"/><ellipse cx="33" cy="50" rx="14" ry="13" fill="#a81028"/><ellipse cx="33" cy="43" rx="11" ry="11" fill="#c41e3a"/><ellipse cx="25" cy="43" rx="9" ry="10" fill="#d02040" transform="rotate(-10 25 43)"/><ellipse cx="41" cy="43" rx="9" ry="10" fill="#d02040" transform="rotate(10 41 43)"/><ellipse cx="33" cy="36" rx="7.5" ry="8.5" fill="#e8546a"/><ellipse cx="33" cy="33" rx="4.5" ry="5" fill="#f07080"/><ellipse cx="30.5" cy="31" rx="2" ry="2.5" fill="rgba(255,255,255,0.4)"/></svg></span>
+      <span class="rose-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 88" width="38" height="58"><line x1="28" y1="68" x2="28" y2="88" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/><ellipse cx="36" cy="73" rx="8" ry="4" fill="#2d5a1b" transform="rotate(28 36 73)"/><ellipse cx="28" cy="62" rx="11" ry="6" fill="#255c14"/><ellipse cx="28" cy="50" rx="14" ry="13" fill="#7b0818"/><ellipse cx="16" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(-20 16 48)"/><ellipse cx="40" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(20 40 48)"/><ellipse cx="28" cy="44" rx="12" ry="11" fill="#a81028"/><ellipse cx="28" cy="38" rx="9" ry="9" fill="#c41e3a"/><ellipse cx="22" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(-10 22 38)"/><ellipse cx="34" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(10 34 38)"/><ellipse cx="28" cy="32" rx="6" ry="7" fill="#e8546a"/><ellipse cx="28" cy="29" rx="3.5" ry="4" fill="#f07080"/><ellipse cx="26" cy="27.5" rx="1.5" ry="2" fill="rgba(255,255,255,0.38)"/></svg></span>
+    </div>
+
+    <div class="poem-stanza">
+      Cada una que cruzó mi camino dejó su sello,<br>
+      su color único, su perfume, su destello —<br>
+      no hay una que no haya dado algo valioso,<br>
+      <span class="poem-highlight">cada encuentro contigo fue luminoso y hermoso.</span>
+    </div>
+
+    <div class="rose-divider">
+      <span class="rose-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 88" width="38" height="58"><line x1="28" y1="68" x2="28" y2="88" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/><ellipse cx="20" cy="68" rx="9" ry="5" fill="#3a7a22" transform="rotate(-35 20 68)"/><ellipse cx="28" cy="62" rx="11" ry="6" fill="#255c14"/><ellipse cx="28" cy="50" rx="14" ry="13" fill="#7b0818"/><ellipse cx="16" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(-20 16 48)"/><ellipse cx="40" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(20 40 48)"/><ellipse cx="28" cy="44" rx="12" ry="11" fill="#a81028"/><ellipse cx="28" cy="38" rx="9" ry="9" fill="#c41e3a"/><ellipse cx="22" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(-10 22 38)"/><ellipse cx="34" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(10 34 38)"/><ellipse cx="28" cy="32" rx="6" ry="7" fill="#e8546a"/><ellipse cx="28" cy="29" rx="3.5" ry="4" fill="#f07080"/><ellipse cx="26" cy="27.5" rx="1.5" ry="2" fill="rgba(255,255,255,0.38)"/></svg></span>
+      <span class="rose-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 100" width="46" height="70"><line x1="33" y1="78" x2="33" y2="100" stroke="#2d5a1b" stroke-width="3.5" stroke-linecap="round"/><ellipse cx="23" cy="78" rx="11" ry="6" fill="#3a7a22" transform="rotate(-35 23 78)"/><ellipse cx="33" cy="71" rx="13" ry="7" fill="#255c14"/><ellipse cx="33" cy="56" rx="17" ry="16" fill="#7b0818"/><ellipse cx="18" cy="54" rx="12" ry="15" fill="#8b0a1a" transform="rotate(-22 18 54)"/><ellipse cx="48" cy="54" rx="12" ry="15" fill="#8b0a1a" transform="rotate(22 48 54)"/><ellipse cx="33" cy="50" rx="14" ry="13" fill="#a81028"/><ellipse cx="33" cy="43" rx="11" ry="11" fill="#c41e3a"/><ellipse cx="25" cy="43" rx="9" ry="10" fill="#d02040" transform="rotate(-10 25 43)"/><ellipse cx="41" cy="43" rx="9" ry="10" fill="#d02040" transform="rotate(10 41 43)"/><ellipse cx="33" cy="36" rx="7.5" ry="8.5" fill="#e8546a"/><ellipse cx="33" cy="33" rx="4.5" ry="5" fill="#f07080"/><ellipse cx="30.5" cy="31" rx="2" ry="2.5" fill="rgba(255,255,255,0.4)"/></svg></span>
+      <span class="rose-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 88" width="38" height="58"><line x1="28" y1="68" x2="28" y2="88" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/><ellipse cx="36" cy="73" rx="8" ry="4" fill="#2d5a1b" transform="rotate(28 36 73)"/><ellipse cx="28" cy="62" rx="11" ry="6" fill="#255c14"/><ellipse cx="28" cy="50" rx="14" ry="13" fill="#7b0818"/><ellipse cx="16" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(-20 16 48)"/><ellipse cx="40" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(20 40 48)"/><ellipse cx="28" cy="44" rx="12" ry="11" fill="#a81028"/><ellipse cx="28" cy="38" rx="9" ry="9" fill="#c41e3a"/><ellipse cx="22" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(-10 22 38)"/><ellipse cx="34" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(10 34 38)"/><ellipse cx="28" cy="32" rx="6" ry="7" fill="#e8546a"/><ellipse cx="28" cy="29" rx="3.5" ry="4" fill="#f07080"/><ellipse cx="26" cy="27.5" rx="1.5" ry="2" fill="rgba(255,255,255,0.38)"/></svg></span>
+    </div>
+
+    <div class="poem-stanza">
+      Hoy el mundo se detiene para mirarte de frente,<br>
+      para decirte en voz alta lo que todos sienten:<br>
+      eres fuerza, eres gracia, eres amor, eres guía —<br>
+      <span class="poem-highlight">eres todo lo que hace bella la vida.</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══ GRATITUD ═══ -->
+<section class="gratitud-section">
+  <div class="gratitud-inner">
+    <p class="section-label">— Desde el corazón —</p>
+    <h2 class="gratitud-title">A Cada Una de Ustedes,<br><em>Gracias Infinitas</em></h2>
+    <p class="gratitud-text">
+      Cada mujer que ha compartido un momento conmigo lleva algo que no tiene precio: su autenticidad.
+      Ya sea por un instante o por toda una vida, cada una aportó algo que me hizo crecer, sonreír,
+      reflexionar o simplemente sentir que el mundo es un lugar más bello con ellas en él.
+    </p>
+    <div class="virtudes-grid">
+      <div class="virtud-card"><span class="virtud-icon">💪</span><div class="virtud-name">Fortaleza</div><div class="virtud-desc">Capaz de cargar el mundo con una sonrisa</div></div>
+      <div class="virtud-card"><span class="virtud-icon">💡</span><div class="virtud-name">Sabiduría</div><div class="virtud-desc">Intuición que va más allá de cualquier lógica</div></div>
+      <div class="virtud-card"><span class="virtud-icon">🎨</span><div class="virtud-name">Creatividad</div><div class="virtud-desc">Transforma lo ordinario en extraordinario</div></div>
+      <div class="virtud-card"><span class="virtud-icon">❤️</span><div class="virtud-name">Amor</div><div class="virtud-desc">Un amor que multiplica sin jamás dividirse</div></div>
+      <div class="virtud-card"><span class="virtud-icon">🌊</span><div class="virtud-name">Resiliencia</div><div class="virtud-desc">Se dobla pero jamás se rompe</div></div>
+      <div class="virtud-card"><span class="virtud-icon">✨</span><div class="virtud-name">Magia</div><div class="virtud-desc">Irradia luz en los rincones más oscuros</div></div>
+      <div class="virtud-card"><span class="virtud-icon">🦋</span><div class="virtud-name">Transformación</div><div class="virtud-desc">Siempre evolucionando, siempre renaciendo</div></div>
+      <div class="virtud-card"><span class="virtud-icon">🌸</span><div class="virtud-name">Belleza</div><div class="virtud-desc">Que nace del alma y florece hacia afuera</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FINAL ═══ -->
+<section class="final-section">
+  <p class="section-label">— Para siempre —</p>
+  <blockquote class="final-quote">
+    "El mejor homenaje que puedo ofrecerte es este: reconocer que sin ti —sin todas ustedes—
+    el mundo sería un lugar infinitamente más gris, más frío, menos vivo."
+  </blockquote>
+
+  <div class="final-roses-row">
+    <span class="rose-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 88" width="50" height="76"><line x1="28" y1="68" x2="28" y2="88" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/><ellipse cx="20" cy="68" rx="9" ry="5" fill="#3a7a22" transform="rotate(-35 20 68)"/><ellipse cx="28" cy="62" rx="11" ry="6" fill="#255c14"/><ellipse cx="28" cy="50" rx="14" ry="13" fill="#7b0818"/><ellipse cx="16" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(-20 16 48)"/><ellipse cx="40" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(20 40 48)"/><ellipse cx="28" cy="44" rx="12" ry="11" fill="#a81028"/><ellipse cx="28" cy="38" rx="9" ry="9" fill="#c41e3a"/><ellipse cx="22" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(-10 22 38)"/><ellipse cx="34" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(10 34 38)"/><ellipse cx="28" cy="32" rx="6" ry="7" fill="#e8546a"/><ellipse cx="28" cy="29" rx="3.5" ry="4" fill="#f07080"/><ellipse cx="26" cy="27.5" rx="1.5" ry="2" fill="rgba(255,255,255,0.38)"/></svg>
+    </span>
+    <span class="rose-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 78 118" width="66" height="100"><line x1="39" y1="90" x2="39" y2="118" stroke="#2d5a1b" stroke-width="4" stroke-linecap="round"/><line x1="39" y1="102" x2="27" y2="91" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/><ellipse cx="27" cy="91" rx="14" ry="7" fill="#3a7a22" transform="rotate(-35 27 91)"/><ellipse cx="51" cy="97" rx="12" ry="6" fill="#2d5a1b" transform="rotate(28 51 97)"/><ellipse cx="39" cy="83" rx="16" ry="8" fill="#255c14"/><ellipse cx="39" cy="65" rx="20" ry="19" fill="#6b0614"/><ellipse cx="21" cy="63" rx="14" ry="18" fill="#7b0818" transform="rotate(-22 21 63)"/><ellipse cx="57" cy="63" rx="14" ry="18" fill="#7b0818" transform="rotate(22 57 63)"/><ellipse cx="39" cy="58" rx="17" ry="16" fill="#9b1025"/><ellipse cx="26" cy="57" rx="13" ry="15" fill="#aa1530" transform="rotate(-14 26 57)"/><ellipse cx="52" cy="57" rx="13" ry="15" fill="#aa1530" transform="rotate(14 52 57)"/><ellipse cx="39" cy="50" rx="13" ry="13" fill="#c41e3a"/><ellipse cx="29" cy="50" rx="11" ry="12" fill="#d02040" transform="rotate(-10 29 50)"/><ellipse cx="49" cy="50" rx="11" ry="12" fill="#d02040" transform="rotate(10 49 50)"/><ellipse cx="39" cy="42" rx="9" ry="10" fill="#e8546a"/><ellipse cx="39" cy="39" rx="6" ry="6.5" fill="#f07080"/><ellipse cx="39" cy="37" rx="3.5" ry="3.5" fill="#f8a0b0"/><ellipse cx="36" cy="36" rx="2.2" ry="3" fill="rgba(255,255,255,0.42)"/></svg>
+    </span>
+    <span class="rose-wrap">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 56 88" width="50" height="76"><line x1="28" y1="68" x2="28" y2="88" stroke="#2d5a1b" stroke-width="3" stroke-linecap="round"/><ellipse cx="36" cy="73" rx="8" ry="4" fill="#2d5a1b" transform="rotate(28 36 73)"/><ellipse cx="28" cy="62" rx="11" ry="6" fill="#255c14"/><ellipse cx="28" cy="50" rx="14" ry="13" fill="#7b0818"/><ellipse cx="16" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(-20 16 48)"/><ellipse cx="40" cy="48" rx="10" ry="12" fill="#8b0a1a" transform="rotate(20 40 48)"/><ellipse cx="28" cy="44" rx="12" ry="11" fill="#a81028"/><ellipse cx="28" cy="38" rx="9" ry="9" fill="#c41e3a"/><ellipse cx="22" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(-10 22 38)"/><ellipse cx="34" cy="38" rx="7" ry="8" fill="#d02040" transform="rotate(10 34 38)"/><ellipse cx="28" cy="32" rx="6" ry="7" fill="#e8546a"/><ellipse cx="28" cy="29" rx="3.5" ry="4" fill="#f07080"/><ellipse cx="26" cy="27.5" rx="1.5" ry="2" fill="rgba(255,255,255,0.38)"/></svg>
+    </span>
+  </div>
+
+  <div class="final-firma">Con todo mi amor y gratitud — 8 · III · 2026</div>
+  <br>
+  <button class="fireworks-btn" onclick="lanzarFuegos()">🎉 &nbsp; ¡Celebrar!</button>
+</section>
+
+<footer>✦ Feliz Día Internacional de la Mujer · Con amor eterno · 8 de Marzo 2026 ✦</footer>
+
+<script>
+// CURSOR GLOW
+const glow=document.getElementById('cursorGlow');
+if(window.matchMedia('(pointer:fine)').matches){
+  document.addEventListener('mousemove',e=>{glow.style.left=e.clientX+'px';glow.style.top=e.clientY+'px';});
+}else{glow.style.display='none';}
+
+// PETALS
+const canvas=document.getElementById('petals-canvas');
+const ctx=canvas.getContext('2d');
+function resize(){canvas.width=window.innerWidth;canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+const COLORS=['#c41e3a','#e8546a','#ff6b8a','#d4a843','#f5c0c8','#8b0a1a'];
+class Petal{
+  constructor(){this.reset(true);}
+  reset(init=false){
+    this.x=Math.random()*canvas.width;
+    this.y=init?Math.random()*canvas.height:-15;
+    this.r=3+Math.random()*9;
+    this.color=COLORS[Math.floor(Math.random()*COLORS.length)];
+    this.speed=0.5+Math.random()*1.3;
+    this.drift=(Math.random()-.5)*.9;
+    this.spin=(Math.random()-.5)*.06;
+    this.angle=Math.random()*Math.PI*2;
+    this.opacity=0.35+Math.random()*.55;
+    this.wave=Math.random()*Math.PI*2;
+  }
+  update(){this.y+=this.speed;this.x+=this.drift+Math.sin(this.wave)*.5;this.wave+=.03;this.angle+=this.spin;if(this.y>canvas.height+15)this.reset();}
+  draw(){ctx.save();ctx.translate(this.x,this.y);ctx.rotate(this.angle);ctx.globalAlpha=this.opacity;ctx.fillStyle=this.color;ctx.beginPath();ctx.ellipse(0,0,this.r*.55,this.r,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+}
+const COUNT=window.innerWidth<600?22:38;
+const PETALS=Array.from({length:COUNT},()=>new Petal());
+function loop(){ctx.clearRect(0,0,canvas.width,canvas.height);PETALS.forEach(p=>{p.update();p.draw();});requestAnimationFrame(loop);}
+loop();
+
+// SCROLL REVEAL
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      if(e.target.classList.contains('virtud-card')){
+        document.querySelectorAll('.virtud-card').forEach((c,i)=>setTimeout(()=>c.classList.add('visible'),i*80));
+      }else{e.target.classList.add('visible');}
+      obs.unobserve(e.target);
+    }
+  });
+},{threshold:.15});
+document.querySelectorAll('.section-label,.poem-title,.poem-stanza,.rose-divider,.gratitud-title,.gratitud-text,.virtud-card,.final-quote,.final-firma,.final-roses-row,.fireworks-btn').forEach(el=>obs.observe(el));
+
+// FIREWORKS
+function lanzarFuegos(){
+  const shapes=['✦','❤','✿','★','♥','✸','◆'];
+  const colors=['#c41e3a','#e8546a','#d4a843','#f0c060','#ff6b8a','#ffffff','#f5c0c8'];
+  for(let i=0;i<60;i++){
+    setTimeout(()=>{
+      const el=document.createElement('div');
+      el.style.cssText=`position:fixed;left:${10+Math.random()*80}vw;top:-10px;font-size:${16+Math.random()*22}px;color:${colors[Math.floor(Math.random()*colors.length)]};pointer-events:none;z-index:9999;animation:confetti-fall ${1.5+Math.random()*1.5}s ease-in forwards;animation-delay:${Math.random()*.6}s;`;
+      el.textContent=shapes[Math.floor(Math.random()*shapes.length)];
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),3500);
+    },Math.random()*900);
+  }
+  for(let i=0;i<90;i++){
+    setTimeout(()=>{
+      const dot=document.createElement('div');
+      const angle=Math.random()*Math.PI*2;
+      const dist=90+Math.random()*230;
+      const cx=window.innerWidth/2,cy=window.innerHeight/2;
+      dot.style.cssText=`position:fixed;left:${cx}px;top:${cy}px;width:${4+Math.random()*9}px;height:${4+Math.random()*9}px;border-radius:50%;background:${colors[Math.floor(Math.random()*colors.length)]};pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:all ${.7+Math.random()*.9}s cubic-bezier(.1,.8,.2,1);opacity:1;`;
+      document.body.appendChild(dot);
+      requestAnimationFrame(()=>{dot.style.left=cx+Math.cos(angle)*dist+'px';dot.style.top=cy+Math.sin(angle)*dist+'px';dot.style.opacity='0';dot.style.transform='translate(-50%,-50%) scale(0)';});
+      setTimeout(()=>dot.remove(),2000);
+    },Math.random()*350);
+  }
+}
+
+// TOUCH RIPPLE
+document.addEventListener('touchstart',e=>{
+  const t=e.touches[0];
+  const r=document.createElement('div');
+  r.style.cssText=`position:fixed;left:${t.clientX-30}px;top:${t.clientY-30}px;width:60px;height:60px;border-radius:50%;border:2px solid rgba(196,30,58,.55);pointer-events:none;z-index:9998;animation:ripple-out .6s ease forwards;`;
+  document.body.appendChild(r);
+  setTimeout(()=>r.remove(),700);
+},{passive:true});
+</script>
+</body>
+</html>
